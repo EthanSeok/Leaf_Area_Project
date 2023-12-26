@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Processing Results</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans', Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 50px;
+        }
+
+        .header {
+            color: #495057;
+            margin-bottom: 30px;
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, .05);
+            background-color: #fff;
+        }
+
+        .image-card {
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .image-card img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+        }
+
+        .btn-custom {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="header text-center">엽면적 측정결과</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <button onclick="location.href='/download_csv/'" class="btn btn-success btn-custom">Download CSV</button>
+            <button onclick="location.href='/history/'" class="btn btn-primary btn-custom">View History</button>
+        </div>
+    </div>
+    <div id="results" class="row justify-content-center">
+        <!-- Results will be loaded here -->
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchResults();
+    });
+
+function fetchResults() {
+    fetch('/results/')
+        .then(response => response.json())
+        .then(data => {
+            const resultsContainer = document.getElementById('results');
+            var resultHtml = '';
+
+            if (data.length > 0) {
+                var latestBatch = data[data.length - 1]; // 가장 최근 배치 데이터 가져오기
+                latestBatch.sort((a, b) => b.filename.localeCompare(a.filename));
+
+                latestBatch.forEach(function (item) {
+                    resultHtml += '<div class="col-md-4 image-card">' +
+                        '<strong>Filename:</strong> ' + item.filename +
+                        '<br><strong>Leaf Area:</strong> ' + item.leaf_area + ' cm²' +
+                        '<br><img src="' + item.output_image_url + '" alt="Output Image"></div>';
+                });
+            }
+
+            resultsContainer.innerHTML = resultHtml;
+        });
+}
+
+
+</script>
+</body>
+</html>

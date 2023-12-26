@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaf Area Measurement</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans', Arial, sans-serif;
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .header {
+            color: #495057;
+            margin-bottom: 30px;
+        }
+
+        .upload-form {
+            margin: 20px 0;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, .05);
+            background-color: #fff;
+            text-align: left;
+        }
+
+        .image-card {
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .image-card img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="header">엽면적 측정하기</h1>
+    <form id="upload-form" class="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" multiple class="form-control-file">
+        <!-- File multiple selection enabled -->
+        <button type="submit" class="btn btn-primary mt-3">측정 시작</button>
+    </form>
+    <!-- CSV Download button, initially hidden -->
+    <button id="download-csv" style="display: none;" class="btn btn-success">Download CSV</button>
+    <div id="result" class="row"></div> <!-- Results will be displayed here -->
+</div>
+
+<script>
+    document.getElementById('upload-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var formData = new FormData();
+        var files = document.querySelector('input[type="file"]').files;
+
+        for (var i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+
+        fetch('/upload/', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                var resultHtml = '';
+                data.forEach(function (item) {
+                    resultHtml += '<div class="col-md-4 image-card">' +
+                        '<strong>Filename:</strong> ' + item.filename +
+                        '<br><strong>Leaf Area:</strong> ' + item.leaf_area + ' cm²' +
+                        '<br><img src="' + item.output_image_url + '" alt="Output Image"></div>';
+                });
+                document.getElementById('result').innerHTML = resultHtml;
+
+                // Show CSV Download button
+                document.getElementById('download-csv').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+
+        // CSV Download button click event
+        document.getElementById('download-csv').addEventListener('click', function () {
+            window.location.href = '/download_csv/';
+        });
+    });
+</script>
+</body>
+</html>
